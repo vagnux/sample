@@ -1,0 +1,37 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:542: checking for gcc
+configure:655: checking whether the C compiler (gcc  ) works
+configure:671: gcc -o conftest    conftest.c  1>&5
+configure:668:1: warning: return type defaults to 'int' [-Wimplicit-int]
+  668 | main(){return(0);}
+      | ^~~~
+configure:697: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:702: checking whether we are using GNU C
+configure:730: checking whether gcc accepts -g
+configure:762: checking whether make sets ${MAKE}
+configure:790: checking for main in -lsocket
+configure:833: checking for main in -lnsl
+configure:881: checking for dirent.h that defines DIR
+configure:919: checking for opendir in -ldir
+configure:1002: checking how to run the C preprocessor
+configure:1082: checking for ANSI C header files
+configure:1190: checking for arpa/inet.h
+configure:1190: checking for errno.h
+configure:1190: checking for fcntl.h
+configure:1190: checking for limits.h
+configure:1190: checking for netinet/in.h
+configure:1190: checking for stdlib.h
+configure:1190: checking for string.h
+configure:1190: checking for sys/socket.h
+configure:1190: checking for unistd.h
+configure:1190: checking for getopt.h
+configure:1228: checking for working const
+configure:1303: checking for size_t
+configure:1337: checking for vprintf
+configure:1444: checking for getcwd
+configure:1444: checking for inet_ntoa
+configure:1444: checking for memset
+configure:1444: checking for socket
+configure:1444: checking for strcasecmp

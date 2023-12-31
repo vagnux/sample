@@ -1,0 +1,48 @@
+#!/bin/bash
+# Configurações do banco de dados
+DB_HOST="mysql"
+DB_HOST_PORT="3306"
+DB_USER="default"
+DB_PASSWORD="123"
+DB_NAME="mp3"
+TABLE_NAME="musics"
+
+
+
+if [ -e "/tmp/mp3scan.pid" ]; then
+    echo "Script has already been executed. Exiting."
+    exit 0
+fi
+
+touch "/tmp/mp3scan.pid"
+
+# Caminho do diretório a ser varrido
+DIRECTORY="/media/"
+
+# Loop através dos arquivos de música no diretório e subdiretórios
+find "$DIRECTORY" -type f \( -iname "*.mp3" \) | while read -r FILEPATH; do
+    # Obter informações do arquivo de música
+    FILENAME=$(basename "$FILEPATH")
+    FILEPATH64=$(echo -n "$FILEPATH" | base64 -w0 )
+    FILENAME64=$(echo -n "$FILENAME" | base64 -w0 )
+
+    # Verificar se a entrada já existe na tabela MariaDB
+    EXISTS=$(mysql -s -N -h "$DB_HOST" -P "$DB_HOST_PORT" -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT COUNT(*) FROM $TABLE_NAME WHERE path_file = FROM_BASE64('$FILEPATH64') AND duration IS NOT NULL")
+
+    if [ "$EXISTS" -gt 0 ]; then
+        echo "Dados de '$FILENAME' já existem na tabela ou a duração já foi preenchida. Pulando para o próximo arquivo."
+        continue
+    fi
+
+    # Obter informações do arquivo de música usando mp3info
+    DURATION=$(mp3info -p "%S" "$FILEPATH")  # Certifique-se de ter a ferramenta mp3info instalada
+    HASH_ID=$(md5sum "$FILEPATH" | awk '{print $1}')
+    BYTES=$(stat -c%s "$FILEPATH")
+   echo  "INSERT INTO $TABLE_NAME (id, duration, file_name, path_file, bytes) VALUES ('$HASH_ID', $DURATION, FROM_BASE64(\""$FILENAME64\""), FROM_BASE64(\""$FILEPATH64\"") , $BYTES);" > "/tmp/mp3scan.pid"
+
+    mysql -h "$DB_HOST" -P "$DB_HOST_PORT" -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <  /tmp/mp3scan.pid
+
+done
+
+rm /tmp/mp3scan.pid
+

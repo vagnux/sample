@@ -1,0 +1,27 @@
+AMPLE ChangeLog:
+
+Now - David Härdeman <david@2gen.com> - Version 0.1.1
+
+	* Write this + some other docs
+
+
+2001-08-07 07:14 - David Härdeman <david@2gen.com> - Version 0.1.0
+
+	* implemented fork, which means > 1 client supported 
+	  (if you change the #define at the start of ample.c) 
+	* implemented sorting of files, start with -o to have them sorted 
+	* code cleanups
+
+
+2001-07-30 14:45 - David Härdeman <david@2gen.com> - Version 0.0.2
+
+	* Start using autoconf
+	* Portability fixes/cleanups
+
+	
+2001-07-30 00:00 - David Härdeman <david@2gen.com> - Version 0.0.1
+
+	* Just the most basic functionality
+	* Select a directory at startup
+	* Only one client
+	* The connected client would get all files randomized

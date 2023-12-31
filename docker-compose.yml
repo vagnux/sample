@@ -1,0 +1,63 @@
+version: '3.7'
+
+services:
+  sample:
+    restart: always
+    hostname: sample
+    image: sample
+    build:
+      context: .
+      dockerfile: ./Docker/Dockerfile-app
+    ports:
+      - "1234:1234"
+    volumes:
+      - /run/media/vagnux/musicas/mp3:/media/
+    links:
+      - mysql
+    networks:
+      - StreamNetwork_default
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 15M
+        reservations:
+          cpus: '0.25'
+          memory: 10M
+
+
+  mysql:
+    restart: always
+    hostname: mysql
+    image: mariadb
+    build:
+      context: .
+      dockerfile: ./Docker/Dockerfile-mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - database:/var/lib/mysql
+      - ./Conf/database/initialization:/docker-entrypoint-initdb.d/
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    networks:
+      - StreamNetwork_default
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          #memory: 2048M
+
+volumes:
+  database:
+
+networks:
+  StreamNetwork_default:
+    driver: bridge
+    name: ${NETWORK_NAME}
+
+
+

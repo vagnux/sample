@@ -1,0 +1,42 @@
+SAMPLE README:
+
+1. License
+----------
+
+See COPYING in the same dir as this file
+
+
+2. Installation
+---------------
+
+You need docker and docker compose
+
+docker-compose build
+docker-compose --compatibility up -d
+
+This will start, listening on port 1234, serving shuffled files.
+
+
+3. Options
+----------
+
+Edit docker-compose.ym on line bellow alter to folter with your mp3 files
+
+	- /path/you/mp3/files:/media/
+
+
+4. Notes
+--------
+
+This a fork of project https://ample.sourceforge.net/
+
+Added MariaDB support for in future generate playlists
+
+For security reasons it doesn't follow symlinks and only files ending
+in .mp3 will be sent (so don't rename any funny files to something.mp3).
+
+
+5. Bugs
+-------
+
+Quite a few probably, too radical changes right now.
