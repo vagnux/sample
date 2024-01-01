@@ -30,7 +30,7 @@ find "$DIRECTORY" -type f \( -iname "*.mp3" \) | while read -r FILEPATH; do
     EXISTS=$(mysql -s -N -h "$DB_HOST" -P "$DB_HOST_PORT" -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT COUNT(*) FROM $TABLE_NAME WHERE path_file = FROM_BASE64('$FILEPATH64') AND duration IS NOT NULL")
 
     if [ "$EXISTS" -gt 0 ]; then
-        echo "Dados de '$FILENAME' já existem na tabela ou a duração já foi preenchida. Pulando para o próximo arquivo."
+        #echo "Dados de '$FILENAME' já existem na tabela ou a duração já foi preenchida. Pulando para o próximo arquivo."
         continue
     fi
 

@@ -1,9 +1,12 @@
-AMPLE ChangeLog:
+SAMPLE ChangeLog:
 
-Now - David Härdeman <david@2gen.com> - Version 0.1.1
 
-	* Write this + some other docs
+2023-12-30  - Vagner Rodrigues <vagnux@gmail.com> - Version 0.1.0
 
+	* Fork of project AMPLE
+	* Add supporte to databases sqlite and mariadb/mysql
+	* Add Docker files
+	* Ater streaming to send 10 seconds of buffer to not spend network
 
 2001-08-07 07:14 - David Härdeman <david@2gen.com> - Version 0.1.0
 

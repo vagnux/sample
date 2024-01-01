@@ -215,7 +215,7 @@ struct Music getMusicInfoMysql(MYSQL *mysqlConn) {
 void updateMusicMysql(MYSQL *mysqlConn, struct Music music) {
 	// Execute the update query
 	const char *update_query =
-			"UPDATE musics SET last_played = ? WHERE path_file = ?;";
+			"UPDATE musics SET last_played = ?, percent = ?  WHERE path_file = ?;";
 
 	// Prepare the statement
 	MYSQL_STMT *stmt = mysql_stmt_init(mysqlConn);
@@ -231,16 +231,21 @@ void updateMusicMysql(MYSQL *mysqlConn, struct Music music) {
 	}
 
 	// Bind parameters to the update query
-	MYSQL_BIND bind_params[2];
+	MYSQL_BIND bind_params[3];
 	memset(bind_params, 0, sizeof(bind_params));
 
 	bind_params[0].buffer_type = MYSQL_TYPE_STRING;
 	bind_params[0].buffer = music.last_played;
 	bind_params[0].buffer_length = strlen(music.last_played);
 
-	bind_params[1].buffer_type = MYSQL_TYPE_STRING;
-	bind_params[1].buffer = music.path_file;
-	bind_params[1].buffer_length = strlen(music.path_file);
+        int percent = music.percent;
+
+        bind_params[1].buffer_type = MYSQL_TYPE_SHORT;
+        bind_params[1].buffer = (char *)&percent;
+
+	bind_params[2].buffer_type = MYSQL_TYPE_STRING;
+	bind_params[2].buffer = music.path_file;
+	bind_params[2].buffer_length = strlen(music.path_file);
 
 	if (mysql_stmt_bind_param(stmt, bind_params) != 0) {
 		fprintf(stderr, "Error binding parameters: %s\n",

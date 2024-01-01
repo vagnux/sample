@@ -45,7 +45,7 @@
 #include "ample.h"
 #include "entries.h"
 #include "options.h"
-#include "mysql.h"
+#include "database.h"
 
 
 /* FIXME: make this nonstatic */
@@ -56,42 +56,44 @@ volatile int num_children = 0;
 struct Music getMusicInfo(void);
 
 
-static int copydata(char *id, int totalBytes, int duration, int from, int to) {
+static int copydata(struct Music music,int from, int to) {
     char buf[BUFFSIZE];
     int amount;
     int frame = 65536;
     int sent = 0;
     int pkg = 0;
+    char *id = music.id;
+    float percent;
+    int bytes = music.bytes;
+    int duration = music.duration;
+    int totalBytes = music.bytes;
 
     if (duration > 0 && totalBytes > 0) {
         frame = (int)(totalBytes / duration) * 10;
     }
 
-    clock_t start_time, end_time;
-    double elapsed_time;
-
-    start_time = clock();
     while ((amount = read(from, buf, sizeof(buf))) > 0) {
-        sent = sent + amount;
         pkg++;
+
         if (write(to, buf, amount) != amount) {
             perror("write");
             close(from);
             return FALSE;
         } else {
             if ((pkg * amount) > frame) {
+                sent += 10;
                 pkg = 0;
+                percent = ((float)sent / music.duration) * 100;
+                music.percent = (int) percent;
+                updateTrack(music);
                 sleep(9);
+
             }
         }
     }
-    end_time = clock();
-    elapsed_time = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
-
-    // Print the elapsed time
-    printf("Time elapsed: %f seconds\n", elapsed_time);
-    if (amount < 0)
-        perror("read");
+    music.percent = 100;
+    updateTrack(music);
+    if (amount < 0) perror("read");
 
     close(from);
     return TRUE;
@@ -102,149 +104,146 @@ void playfiles(int conn) {
     char *id;
     int bytes;
     int duration;
-
+    struct Music musicInfo;
     do {
-        struct Music musicInfo = getMusicInfo();
-        id = musicInfo.id;
-        bytes = musicInfo.bytes;
-        duration = musicInfo.duration;
-        updateTrack(musicInfo);
-        printf("---- opening file %s with duration %d and size %d\n\n\n\n",
+            musicInfo = getMusicInfo();
+            printf("---- opening file %s with duration %d and size %d\n\n\n\n",
                musicInfo.path_file, duration, bytes);
         if ((file = open(musicInfo.path_file, O_RDONLY)) < 0) {
             perror("open");
+            printf("---- Panic to open file\n\n\n\n");
             break;
         }
 
-    } while (copydata(id, bytes, duration, file, conn));
+    } while (copydata(musicInfo, file, conn));
 
     close(file);
 }
 
 
 static int openconn(struct sockaddr_in *address, struct config *conf) {
-	int i = 1;
-	int sock;
+        int i = 1;
+        int sock;
 
-	if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
-		DIE("socket");
+        if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+                DIE("socket");
 
-	i = 1;
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i));
-	address->sin_family = AF_INET;
-	address->sin_port = htons(conf->port);
-	memset(&address->sin_addr, 0, sizeof(address->sin_addr));
+        i = 1;
+        setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i));
+        address->sin_family = AF_INET;
+        address->sin_port = htons(conf->port);
+        memset(&address->sin_addr, 0, sizeof(address->sin_addr));
 
-	if (bind(sock, (struct sockaddr*) address, sizeof(struct sockaddr_in)))
-		DIE("bind");
+        if (bind(sock, (struct sockaddr*) address, sizeof(struct sockaddr_in)))
+                DIE("bind");
 
-	if (listen(sock, 5))
-		DIE("listen");
+        if (listen(sock, 5))
+                DIE("listen");
 
-	return sock;
+        return sock;
 }
 
 int handleclient(int conn, struct config *conf) {
-	int i;
-	char buffer[BUFFSIZE];
+        int i;
+        char buffer[BUFFSIZE];
 
-	DEBUG(("---- sending headers\n"));
-	i = sprintf(buffer, SERVERMSG);
-	write(conn, buffer, i);
 
-	DEBUG(("---- reading request\n"));
-	if (readrequest(conn, conf)) {
-		DEBUG(("---- requested path %s\n", conf->path));
+        i = sprintf(buffer, SERVERMSG);
+        write(conn, buffer, i);
 
-		printf("---- looking for mp3 files in subdirectory %s\n", conf->path);
-		getfiles(conf->path, conf);
 
-		IF_DEBUG(printf("---- listing mp3 files\n"); listentries(););
+        if (readrequest(conn, conf)) {
+                DEBUG(("---- requested path %s\n", conf->path));
 
-		if (!conf->order) {
-			printf("---- shuffling mp3 files\n");
-			shuffleentries();
-			IF_DEBUG(printf("---- listing mp3 files\n"); listentries(););
-		}
-		playfiles(conn);
-	}
+                printf("---- looking for mp3 files in subdirectory %s\n", conf->path);
+                getfiles(conf->path, conf);
 
-	cleartree(root);
-	close(conn);
-	return (0);
+                IF_DEBUG(printf("---- listing mp3 files\n"); listentries(););
+
+                if (!conf->order) {
+                        printf("---- shuffling mp3 files\n");
+                        shuffleentries();
+                        IF_DEBUG(printf("---- listing mp3 files\n"); listentries(););
+                }
+                playfiles(conn);
+        }
+
+        cleartree(root);
+        close(conn);
+        return (0);
 }
 
 void handlechild(int signal) {
-	int status;
-	pid_t pid;
+        int status;
+        pid_t pid;
 
-	num_children--;
-	printf("Number of children %d\n", num_children);
-	pid = wait(&status);
+        num_children--;
+        printf("Number of children %d\n", num_children);
+        pid = wait(&status);
 }
 
 int main(int argc, char *argv[]) {
-	struct sockaddr_in address;
-	struct config conf;
-	int conn, sock;
-	pid_t pid;
-	socklen_t addrlen = sizeof(struct sockaddr_in);
-	char *cwd;
-	struct sigaction sa;
-	sigset_t chld;
+        struct sockaddr_in address;
+        struct config conf;
+        int conn, sock;
+        pid_t pid;
+        socklen_t addrlen = sizeof(struct sockaddr_in);
+        char *cwd;
+        struct sigaction sa;
+        sigset_t chld;
 
-	root = NULL;
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = handlechild;
-	sigemptyset(&chld);
-	sigaddset(&chld, SIGCHLD);
-	if (sigaction(SIGCHLD, &sa, NULL))
-		perror("sigaction");
+        root = NULL;
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = handlechild;
+        sigemptyset(&chld);
+        sigaddset(&chld, SIGCHLD);
+        if (sigaction(SIGCHLD, &sa, NULL))
+                perror("sigaction");
 
-	checkopt(argc, argv, &conf);
-	chdir(conf.path);
-	printf("---- using %s as root for mp3 files\n", conf.path);
-	GETCWD(cwd);
+        checkopt(argc, argv, &conf);
+        chdir(conf.path);
+        printf("---- using %s as root for mp3 files\n", conf.path);
+        GETCWD(cwd);
 
-	printf("---- opening socket, port %d\n", conf.port);
-	sock = openconn(&address, &conf);
+        printf("---- opening socket, port %d\n", conf.port);
+        sock = openconn(&address, &conf);
 
-	while ((conn = accept(sock, (struct sockaddr*) &address, &addrlen))) {
+        while ((conn = accept(sock, (struct sockaddr*) &address, &addrlen))) {
 
-		if (conn < 0) {
-			if (errno == EINTR)
-				continue;
-			else
-				DIE("accept");
-		}
+                if (conn < 0) {
+                        if (errno == EINTR)
+                                continue;
+                        else
+                                DIE("accept");
+                }
 
-		IF_DEBUG(printf("---- incoming connection\n")
-		;
-		);
-		sigprocmask(SIG_BLOCK, &chld, NULL);
-		pid = fork();
+                IF_DEBUG(printf("---- incoming connection\n")
+                ;
+                );
+                sigprocmask(SIG_BLOCK, &chld, NULL);
+                pid = fork();
 
-		if (pid < 0) {
-			DIE("fork");
-		} else if (pid > 0) {
-			num_children++;
-			IF_DEBUG(printf("---- Number of children %d\n", num_children)
-			;
-			);
-			printf("---- connection from %s:%d handled by child with pid %d\n",
-					inet_ntoa(address.sin_addr), address.sin_port, pid);
-			sigprocmask(SIG_UNBLOCK, &chld, NULL);
+                if (pid < 0) {
+                        DIE("fork");
+                } else if (pid > 0) {
+                        num_children++;
+                        IF_DEBUG(printf("---- Number of children %d\n", num_children)
+                        ;
+                        );
+                        printf("---- connection from %s:%d handled by child with pid %d\n",
+                                        inet_ntoa(address.sin_addr), address.sin_port, pid);
+                        sigprocmask(SIG_UNBLOCK, &chld, NULL);
 
-			close(conn);
-			while (num_children >= MAX_CHILDREN)
-				pause();
-			continue;
-		} else {
-			return (handleclient(conn, &conf));
-		}
-	}
+                        close(conn);
+                        while (num_children >= MAX_CHILDREN)
+                                pause();
+                        continue;
+                } else {
+                        return (handleclient(conn, &conf));
+                }
+        }
 
-	close(sock);
-	free(cwd);
-	return 0;
+        close(sock);
+        free(cwd);
+        return 0;
 }
