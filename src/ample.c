@@ -105,6 +105,7 @@ void playfiles(int conn) {
     int bytes;
     int duration;
     struct Music musicInfo;
+    int errorlevel = 0;
     do {
             musicInfo = getMusicInfo();
             printf("---- opening file %s with duration %d and size %d\n\n\n\n",
@@ -112,7 +113,9 @@ void playfiles(int conn) {
         if ((file = open(musicInfo.path_file, O_RDONLY)) < 0) {
             perror("open");
             printf("---- Panic to open file\n\n\n\n");
-            break;
+             musicInfo = getMusicInfo();
+            errorlevel++;
+            if ( errorlevel > 5 )break;
         }
 
     } while (copydata(musicInfo, file, conn));

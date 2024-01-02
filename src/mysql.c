@@ -57,6 +57,23 @@ int initMysql(MYSQL *mysqlConn) {
 		fprintf(stdout, "Table 'musics' created successfully.\n");
 	}
 
+
+                const char *create_table_query2 = "CREATE PROCEDURE  `playlist` ()"
+                                            "BEGIN"
+                                            "	DROP TABLE IF EXISTS playlist;"
+                                            "	SET @limitnot := (SELECT ROUND(100 * (SUM(CASE WHEN percent IS NULL THEN 1 ELSE 0 END) / COUNT(*))) FROM musics); "
+                                            "	SET @limityes := (SELECT ROUND(100 * (SUM(CASE WHEN percent IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*))) FROM musics); "
+                                            "	PREPARE stmt FROM 'CREATE TABLE playlist (select * from (SELECT * from (SELECT *,  ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) * 2 AS virtualid FROM musics WHERE percent IS NULL  LIMIT ?) as d UNION SELECT * from (SELECT *,  (ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) * 2) - 1 AS virtualid FROM musics WHERE percent IS NOT NULL and last_played < NOW() - INTERVAL 4 hour  LIMIT ?) as g) as x order by virtualid asc)'; "
+                                            "	EXECUTE stmt USING @limitnot, @limityes; "
+                                            "	DEALLOCATE PREPARE stmt; "
+                                            "END";
+        if (executeQuery(mysqlConn, create_table_query2) != 0) {
+		fprintf(stderr, "Error creating procedure: %s\n", mysql_error(mysqlConn));
+		return -1;
+	} else {
+		fprintf(stdout, "procedure playlist created successfully.\n");
+	}
+
 	return 0;
 }
 
@@ -135,11 +152,38 @@ int insertMusicMysql(MYSQL *mysqlConn, char *musicPath, int duration,
 	return 0;
 }
 
+    void callPlaylistProcedure(MYSQL *mysqlConn) {
+        // Execute the SQL procedure
+        const char *sql_procedure = "CALL playlist();";
+
+        // Prepare the statement
+        MYSQL_STMT *stmt = mysql_stmt_init(mysqlConn);
+        if (stmt == NULL) {
+            fprintf(stderr, "mysql_stmt_init() failed\n");
+            exit(EXIT_FAILURE);
+        }
+
+        if (mysql_stmt_prepare(stmt, sql_procedure, strlen(sql_procedure)) != 0) {
+            fprintf(stderr, "Failed to prepare the query: %s\n", mysql_stmt_error(stmt));
+            exit(EXIT_FAILURE);
+        }
+
+        // Execute the procedure
+        if (mysql_stmt_execute(stmt) != 0) {
+            fprintf(stderr, "Error executing SQL statement: %s\n", mysql_stmt_error(stmt));
+            exit(EXIT_FAILURE);
+        }
+
+        // Finalize the statement
+        mysql_stmt_close(stmt);
+    }
+
 struct Music getMusicInfoMysql(MYSQL *mysqlConn) {
 	struct Music music;
 
-	// Execute the SQL query
-	const char *sql_query = "SELECT  id, bytes, duration, file_name, last_played, path_file, points, percent FROM musics ORDER BY RAND() LIMIT 1;";
+        callPlaylistProcedure(mysqlConn);
+
+        const char *sql_query = "SELECT  id, bytes, duration, file_name, last_played, path_file, points, percent FROM playlist ORDER BY RAND() LIMIT 1;";
 
 	// Prepare the statement
 	MYSQL_STMT *stmt = mysql_stmt_init(mysqlConn);
