@@ -1,12 +1,37 @@
 #!/bin/bash
-# Configurações do banco de dados
-DB_HOST="mysql"
-DB_HOST_PORT="3306"
-DB_USER="default"
-DB_PASSWORD="123"
-DB_NAME="mp3"
-TABLE_NAME="musics"
 
+
+# Specify the path to your config file
+CONFIG_FILE="~/.config/sample/sample.cfg"
+
+# Check if the config file exists
+if [ ! -f "$CONFIG_FILE" ]; then
+   CONFIG_FILE="/etc/sample/sample.cfg"
+   if [ ! -f "$CONFIG_FILE" ]; then
+        echo "Error: Config file not found!"
+        exit 1
+    fi
+fi
+
+# Read the config file line by line
+while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # Remove leading and trailing whitespaces from key and value
+    key=$(echo $key | tr -d '[:space:]')
+    value=$(echo $value | tr -d '[:space:]')
+    echo "$key -> $value"
+    # Set the variable using the key and value
+    export "$key=$value"
+done < "$CONFIG_FILE"
+
+
+
+# Configurações do banco de dados
+DB_HOST="$mysql_host"
+DB_HOST_PORT="$mysql_port"
+DB_USER="$mysql_user"
+DB_PASSWORD="$mysql_pass"
+DB_NAME="$mysql_database"
+TABLE_NAME="musics"
 
 
 if [ -e "/tmp/mp3scan.pid" ]; then
@@ -17,8 +42,8 @@ fi
 touch "/tmp/mp3scan.pid"
 
 # Caminho do diretório a ser varrido
-DIRECTORY="/media/"
-
+DIRECTORY="$file_path"
+echo "===>$DIRECTORY"
 # Loop através dos arquivos de música no diretório e subdiretórios
 find "$DIRECTORY" -type f \( -iname "*.mp3" \) | while read -r FILEPATH; do
     # Obter informações do arquivo de música

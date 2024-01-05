@@ -28,8 +28,8 @@ LIBS = @LIBS@
 LDFLAGS = @LDFLAGS@
 LIBTOOL = $(CC)
 
-SOURCES = ample.c entries.c options.c sqlite.c md5.c mysql.c database.c
-OBJECTS = ample.o entries.o options.o sqlite.o md5.o  mysql.o database.o
+SOURCES = ample.c entries.c options.c sqlite.c md5.c mysql.c database.c configloader.c
+OBJECTS = ample.o entries.o options.o sqlite.o md5.o  mysql.o database.o configloader.o
 COMPILE = $(CC) $(CFLAGS) $(CPPFLAGS) $(EXTRACPPFLAGS) $(DEFS)
 LINK = $(LIBTOOL) $(LDFLAGS) $(LIBS)
 

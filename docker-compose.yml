@@ -12,6 +12,13 @@ services:
       - "1234:1234"
     volumes:
       - /run/media/vagnux/musicas/mp3:/media/
+    environment:
+      - MYSQL_HOST=mysql
+      - mysql_user=${MYSQL_USER}
+      - mysql_pass=${MYSQL_PASSWORD}
+      - mysql_port=3306
+      - mysql_database=${MYSQL_DATABASE}
+
     links:
       - mysql
     networks:

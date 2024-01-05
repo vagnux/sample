@@ -5,13 +5,16 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update
 RUN apt-get install -y libmysqlcppconn-dev g++ autotools-dev autoconf automake make mp3info libc6 default-libmysqlclient-dev openssl libssl-dev libsqlite3-dev libmpg123-dev default-mysql-client
 
+
 RUN mkdir -p /source
 RUN mkdir -p /media
 COPY . /source
 RUN chmod +x /source/mp3scan
+RUN chmod +x /source/entrypoint.sh
 
 RUN cd /source \
 	&& ./configure \
 	&& make
 
-ENTRYPOINT ["./source/src/ample", "/media"]
+
+ENTRYPOINT ["/source/entrypoint.sh"]

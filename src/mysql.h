@@ -1,4 +1,5 @@
 // sqlite.h
+#include <mysql/mysql.h>
 
 #ifndef MYSQL_H
 #define MYSQL_H
