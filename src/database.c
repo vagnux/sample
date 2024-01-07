@@ -30,8 +30,7 @@ int insertMusic(char *musicPath, int duration, char *fileName, int rank,
   MYSQL *mysqlConn =
       openMySQLConnection(hostname, username, password, database);
 
-  // Perform MySQL operations here...
-
+  
   return insertMusicMysql(mysqlConn, musicPath, duration, fileName, rank,
                           percent, lastPlayed, bytesArquivo);
   closeMySQLConnection(mysqlConn);

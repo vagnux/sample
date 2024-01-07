@@ -35,6 +35,11 @@ LINK = $(LIBTOOL) $(LDFLAGS) $(LIBS)
 
 all: ample
 
+install:
+	cp ample /usr/bin/ample
+	cp ../mp3scan /usr/bin/
+	chmod +x /usr/bin/mp3scan
+
 ample: $(OBJECTS)
 	$(LINK) $(OBJECTS) -o $@
 
@@ -51,7 +56,7 @@ dist-clean:
 	rm -f *.o *~ Makefile ample
 	rm -rf CVS
 
-.PHONY: all clean maint-clean dist-clean
+.PHONY: all clean maint-clean dist-clean install
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

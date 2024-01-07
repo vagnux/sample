@@ -292,7 +292,7 @@ void getfiles(char *path, struct config *conf) {
         int ini = init();
 
 	// Substitua "seu_script.sh" pelo caminho e nome do seu script
-	const char *scriptPath = "/source/mp3scan 2> /dev/null &";
+	const char *scriptPath = "/usr/bin/mp3scan 2> /dev/null &";
 
 	// Executa o script
 	int result = system(scriptPath);

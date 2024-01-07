@@ -14,7 +14,7 @@ MYSQL *openMySQLConnection(const char *hostname, const char *username,
     return NULL;
   }
 
-  if (mysql_real_connect(conn, hostname, username, password, database, 0, NULL,
+  if (mysql_real_connect(conn, hostname, username, password, database, 3306, NULL,
                          0) == NULL) {
     fprintf(stderr, "mysql_real_connect() failed: %s |  host %s database %s \n", mysql_error(conn), hostname, database);
     mysql_close(conn);
@@ -310,10 +310,7 @@ void updateMusicMysql(MYSQL *mysqlConn, struct Music music) {
   if (mysql_stmt_execute(stmt) != 0) {
     fprintf(stderr, "Failed to execute the update query: %s\n",
             mysql_stmt_error(stmt));
-  } else {
-    printf("\nLast Played updated successfully.\n %s  - %s -> %s \n",
-           update_query, music.last_played, music.path_file);
-  }
+  } 
 
   // Finalize the statement
   mysql_stmt_close(stmt);

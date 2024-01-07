@@ -40,6 +40,13 @@ all:
 	  cd $(top_srcdir); \
 	done
 
+install:
+	@for i in $(SUBDIRS); do \
+	  echo "Making install in $$i ..."; \
+	  cd $$i; $(MAKE) install; \
+	  cd $(top_srcdir); \
+	done
+
 clean:
 	@for i in $(SUBDIRS); do \
 	  echo "Making clean in $$i ..."; \
@@ -64,7 +71,7 @@ dist-clean:
 	rm -f config.cache config.h config.log config.status *~ Makefile
 	rm -rf CVS
 
-.PHONY: all clean dist-clean maint-clean
+.PHONY: all clean dist-clean maint-clean install
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

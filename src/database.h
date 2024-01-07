@@ -16,22 +16,6 @@ struct Music {
     int percent;
 };
 
-
-
-// Função para inicializar o banco de dados SQLite
-// Retorna 0 em caso de sucesso, -1 em caso de erro
-int init();
-
-// Função para inserir informações sobre uma música no banco de dados
-// Parâmetros:
-//   - musicPath: caminho do arquivo da música
-//   - duration: duração da música em segundos
-//   - fileName: nome do arquivo da música
-//   - rank: classificação da música
-//   - percent: porcentagem de conclusão da música
-//   - lastPlayed: data e hora da última reprodução da música
-// Retorna 0 em caso de sucesso, -1 em caso de erro
-
 int init();
 
 int insertMusic(char *musicPath, int duration, char *fileName, int rank, int percent, char *lastPlayed, long bytesArquivo);

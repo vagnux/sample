@@ -14,7 +14,8 @@ RUN chmod +x /source/entrypoint.sh
 
 RUN cd /source \
 	&& ./configure \
-	&& make
+	&& make \
+	&& make install
 
 
 ENTRYPOINT ["/source/entrypoint.sh"]

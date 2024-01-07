@@ -22,10 +22,6 @@ char* genHash(const char *string) {
 
 	EVP_MD_CTX_free(mdctx);
 
-/*	for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
-		sprintf(&hash[i * 2], "%02x", (unsigned int) digest[i]);
-	}
-	*/
 
 	return hash;
 }
