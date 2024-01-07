@@ -160,17 +160,10 @@ int handleclient(int conn, struct config *conf) {
     printf("---- looking for mp3 files in subdirectory %s\n", conf->path);
     getfiles(conf->path, conf);
 
-    IF_DEBUG(printf("---- listing mp3 files\n"); listentries(););
-
-    if (!conf->order) {
-      printf("---- shuffling mp3 files\n");
-      shuffleentries();
-      IF_DEBUG(printf("---- listing mp3 files\n"); listentries(););
-    }
     playfiles(conn);
   }
 
-  cleartree(root);
+  
   close(conn);
   return (0);
 }

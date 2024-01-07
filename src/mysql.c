@@ -1,5 +1,4 @@
 #include "mysql.h"
-#include "md5.h"
 #include <mysql/mysql.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -105,7 +104,7 @@ int insertMusicMysql(MYSQL *mysqlConn, char *musicPath, int duration,
                      char *fileName, int rank, int percent, char *lastPlayed,
                      long bytesArquivo) {
   const char *insert_query =
-      "INSERT INTO musics (id, path_file, duration, file_name, points, "
+      "INSERT INTO musics (MD5(id), path_file, duration, file_name, points, "
       "percent, last_played, bytes) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
   // Prepare the statement
@@ -122,7 +121,7 @@ int insertMusicMysql(MYSQL *mysqlConn, char *musicPath, int duration,
     return -1;
   }
 
-  char *id = genHash(musicPath);
+  char *id = musicPath;
   printf("ID %s musica %s.\n", id, musicPath);
 
   MYSQL_BIND bind_params[8];

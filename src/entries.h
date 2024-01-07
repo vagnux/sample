@@ -9,7 +9,6 @@
 #    define PATH_MAX 1024
 #  endif
 #endif
-#include "sqlite.h"
 
 struct node {
 	char * path;
@@ -29,9 +28,6 @@ extern void removeentry(mp3entry ** rootentry, mp3entry * toremove);
 
 /* Counts the entries in the list pointed to by rootentry */
 extern int countentries(mp3entry * rootentry);
-
-/* Shuffles the entries */
-extern void shuffleentries(void);
 
 /* Lists all entries to stdout */
 extern void listentries(void);
