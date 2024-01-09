@@ -39,6 +39,7 @@ install:
 	cp ample /usr/bin/ample
 	cp ../mp3scan /usr/bin/
 	chmod +x /usr/bin/mp3scan
+	chmod +x /usr/bin/ample
 
 ample: $(OBJECTS)
 	$(LINK) $(OBJECTS) -o $@

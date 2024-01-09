@@ -8,4 +8,4 @@ echo "mysql_pass="$mysql_pass >> /etc/sample/sample.cfg
 echo "mysql_port="$mysql_port >> /etc/sample/sample.cfg
 echo "mysql_database="$mysql_database >> /etc/sample/sample.cfg
 echo "file_path=/media/" >> /etc/sample/sample.cfg
-/source/src/ample /media/
+/usr/bin/ample /media/
